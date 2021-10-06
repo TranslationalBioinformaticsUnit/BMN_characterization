@@ -45,5 +45,5 @@ To show that the integration method provide more information than a single datas
 
 
 ### Reference
- <span id="ref1"> 1. Mischnik, Marcel, et al. "IKAP: A heuristic framework for inference of kinase activities from Phosphoproteomics data." Bioinformatics 32.3 (2016): 424-431 </span>
+ <span id="ref1"> 1. Mischnik, Marcel, et al. "IKAP: A heuristic framework for inference of kinase activities from Phosphoproteomics data." Bioinformatics 32.3 (2016): 424-431 </span>. 
  <span id="ref2"> 2. Tasic, B. et al. Adult mouse cortical cell taxonomy revealed by single cell transcriptomics. Nat. Neurosci. 19, 335–346 (2016).</span>
