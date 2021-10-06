@@ -12,6 +12,8 @@ mouse <-  useMart("ensembl", dataset = "mmusculus_gene_ensembl")
 
 #### mouse MSC 
 load(file="/Data/MSC/MSC.integration_sub_20200624.RData") 
+
+### human MSC 
 load(file = "/Data/20201009_hBMN.MSC.sub.RData") 
 
 MSC.markers <- read.csv("/Markers/MSCs/Final_12_clusters_MSC.csv", row.names = 1)
@@ -51,7 +53,6 @@ DimPlot(hBMN.MSC.sub, group.by = "pred.grun.MSC.pruned.labels")
 
 
 #### mouse EC
-###load(/Data/20210228_hEC.singleR.obj.for.plots.RData")
 load(file ="/Data/EC.integration_614.RData") 
 hBMN.EC.rmC4 <-readRDS("/Data/hBMN.EC.rmC4_20201026.Rds")
 EC.markers <- read.csv("/Markers/ECs/all_ECs_14_clusters.csv", row.names = 1)
