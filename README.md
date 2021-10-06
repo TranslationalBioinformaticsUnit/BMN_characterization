@@ -2,11 +2,11 @@
 This repository is a summary of codes used in  [_Deep deconvolution of the hematopoietic stem cell regulatory microenvironment reveals a high degree of specialization and conservation between mouse and human_](https://www.biorxiv.org/content/10.1101/2021.07.17.452614v1).
 
 ### Preprocessing, Integration and Clustering
-The cells were filtered and integrated using Seurat. Core script is [Clustering.R](R_code/Clustering.R)
+The cells were filtered and integrated using Seurat. A divide-and-conqur strategy was applied using IKAP[[REF1]](#ref1). Core script is [Clustering.R](R_code/Clustering.R)
 
 ### Bootstrapping
 
-To measure the robustness of the clusters, we customized an existing bootstrapping-based approach based on random forest [[REF1]](#ref1). See details below.
+To measure the robustness of the clusters, we customized an existing bootstrapping-based approach based on random forest [[REF2]](#ref2). See details below.
 
 ###### Summary of the bootstrapping strategy:
 
@@ -45,4 +45,5 @@ To show that the integration method provide more information than a single datas
 
 
 ### Reference
- <span id="ref1"> 1. Tasic, B. et al. Adult mouse cortical cell taxonomy revealed by single cell transcriptomics. Nat. Neurosci. 19, 335–346 (2016).</span>
+ <span id="ref1"> 1. Mischnik, Marcel, et al. "IKAP: A heuristic framework for inference of kinase activities from Phosphoproteomics data." Bioinformatics 32.3 (2016): 424-431 </span>
+ <span id="ref2"> 2. Tasic, B. et al. Adult mouse cortical cell taxonomy revealed by single cell transcriptomics. Nat. Neurosci. 19, 335–346 (2016).</span>
