@@ -15,7 +15,7 @@ To measure the robustness of the clusters, we customized an existing bootstrappi
 
 
 <br/><br/>
--  *Dominate cluster identification*:  A dominant cluster is the cluster to which the cell is assigned for more than half the runs.
+-  *Dominant cluster identification*:  A dominant cluster is the cluster to which the cell is assigned for more than half the runs.
 - *Number of Correct Dominance Assignment (#Correct)*: The sum of times the dominant cluster matches the original cluster (true positive) for a cell across all cluster pair comparisons.
 -	*Recall Per Cell*: The proportion of correct assignment (positive result) to its original cluster in all runs from all comparisons.
 
