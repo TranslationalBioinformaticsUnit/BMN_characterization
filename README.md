@@ -24,7 +24,7 @@ To measure the robustness of the clusters, we customized an existing bootstrappi
 see [Using_Bootstrapping_functions.R](R_code/Using_Bootstrapping_functions.R)
 
 
-#### Compare mouse and human BMN
+### Compare mouse and human BMN
 Human samples were filtered in the same way with mouse, except
 - the mt.percent threshold is 10% instead of 5%
 - cells with more than 10% of Immunoglobin protein were removed.   
