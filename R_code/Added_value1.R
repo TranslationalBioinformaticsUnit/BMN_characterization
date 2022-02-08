@@ -156,7 +156,7 @@ for (i in unique(EC.markers.in$cluster)){
 }
 
 MSC.markers.in <- MSC.markers
-out.dir <- paste0("~/Google_Drive/Living_system/Bone_Marrow/Figures/added_value/point1/Venn_diagram_v2/MSC/")
+out.dir <- paste0("~/added_value/point1/Venn_diagram_v2/MSC/")
 
 for (i in unique(MSC.markers.in$cluster)){
   cat (i)
@@ -186,7 +186,7 @@ for (i in unique(MSC.markers.in$cluster)){
 overlap_matrix_EC$False_postive <- 1-(overlap_matrix_EC$overlapped/overlap_matrix_EC$`single dataset`)
 overlap_matrix_EC$False_negative <- 1- overlap_matrix_EC$shared_pt
 
-save(overlap_matrix_EC, overlap_matrix_MSC, file = "~/Google_Drive/Living_system/Bone_Marrow/Data/added_value/added_value1_overlapped_matixs.RData")
+save(overlap_matrix_EC, overlap_matrix_MSC, file = "~/added_value1_overlapped_matixs.RData")
 overlap_matrix_MSC$False_postive <- 1-(overlap_matrix_MSC$overlapped/overlap_matrix_MSC$`single dataset`)
 overlap_matrix_MSC$False_negative <- 1- overlap_matrix_MSC$shared_pt
 overlap_matrix_MSC$False_postive[is.na(overlap_matrix_MSC$False_postive)] <- 1
@@ -202,7 +202,7 @@ p1 <- ggplot(overlap_matrix_MSC,aes_string("cluster", "dataset")) +
         panel.border=element_blank(),panel.grid.major = element_blank()
         #panel.grid.major=element_line(color='#eeeeee')
   )+scale_x_discrete(position = "top") 
-out.dir <- paste0("~/Google_Drive/Living_system/Bone_Marrow/Figures/added_value/point1/")
+out.dir <- paste0("~/added_value/point1/")
 prefix <- "20210404"
 file_name <- paste0(out.dir,"/",prefix, "Added_value_1_MSC_False_negative.jpg")
 jpeg(file=file_name, width = 7, height = 7*0.37, res= 300,units = "in", bg="transparent")
@@ -224,7 +224,7 @@ p1 <- ggplot(overlap_matrix_EC,aes_string("cluster", "dataset")) +
         panel.border=element_blank(),panel.grid.major = element_blank()
         #panel.grid.major=element_line(color='#eeeeee')
   )+scale_x_discrete(position = "top") 
-out.dir <- paste0("~/Google_Drive/Living_system/Bone_Marrow/Figures/added_value/point1/")
+out.dir <- paste0("~//added_value/point1/")
 prefix <- "20210404"
 file_name <- paste0(out.dir,"/",prefix, "Added_value_1_EC_False_negative.jpg")
 jpeg(file=file_name, width = 7, height = 7*0.37, res= 300,units = "in", bg="transparent")
@@ -246,7 +246,7 @@ p1 <- ggplot(overlap_matrix_EC,aes_string("cluster", "dataset")) +
         panel.border=element_blank(),panel.grid.major = element_blank()
         #panel.grid.major=element_line(color='#eeeeee')
   )+scale_x_discrete(position = "top") 
-out.dir <- paste0("~/Google_Drive/Living_system/Bone_Marrow/Figures/added_value/point1/")
+out.dir <- paste0("~/Figures/added_value/point1/")
 prefix <- "20210404"
 file_name <- paste0(out.dir,"/",prefix, "Added_value_1_EC_False_postivive.jpg")
 jpeg(file=file_name, width = 7, height = 7*0.37, res= 300,units = "in", bg="transparent")
