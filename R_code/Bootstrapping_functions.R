@@ -90,7 +90,7 @@ pair_rf <- function(obj_sub, n1, n2) { #### build rm model on one pair of cluste
       #cat("---------------bin", i, "-------------\n")
       obj_sub_train <- subset(obj_sub,cells = colnames(obj_sub)[bins!=i])  #### get the features from training set (80%)
       markers <- FindAllMarkers(object= obj_sub_train, only.pos = TRUE, min.pct = 0.25, thresh.use = 0.25) #### find all markers from the 
-      genes <- markers %>% group_by(cluster) %>% top_n(n=(n.gene/2), wt = avg_logFC)  ####using 20 genes for clustering, 10 from each cluster
+      genes <- markers %>% group_by(cluster) %>% top_n(n=(n.gene/2), wt = avg_log2FC)  ####using 20 genes for clustering, 10 from each cluster
       cat("dim of training dataset:",dim(obj_sub_train), "\n")
       rm(obj_sub_train)
       gc()
@@ -178,7 +178,7 @@ pair_rf_fix_no <- function(obj_sub, n1, n2, traning_size) {
       Idents(obj_sub_train_2) <- obj_sub_train_2$ident
       
       markers <- FindAllMarkers(object= obj_sub_train_2, only.pos = TRUE, min.pct = 0.25, thresh.use = 0.25, assay = "RNA", slot = "data")
-      genes <- markers %>% group_by(cluster) %>% top_n(n=(n.gene/2), wt = avg_logFC)
+      genes <- markers %>% group_by(cluster) %>% top_n(n=(n.gene/2), wt = avg_log2FC)
       cat("dim of training dataset:",dim(obj_sub_train_2), "\n")
       
       index <- which(rownames(obj_sub)%in%genes$gene)
@@ -243,7 +243,7 @@ pair_rf_fix_no <- function(obj_sub, n1, n2, traning_size) {
 ### Function 2 rf_preplot: to get metrix lile reall of every cell for plotting ########
 ### rf_step1_result: result from Pair select function 
 ### obj: same Seurat object for Pair_selection
-rf_preplot <- function(rf_step1_result,obj) {
+add_recall_per_cell <- function(rf_step1_result,obj,seurat_colname) {
   names <- unlist(sapply(rf_step1_result$prediction.list.clean, rownames, simplify = T))
   pred_real_sum <- data.frame(matrix(nrow = dim(obj)[2], ncol = 3))
   rownames(pred_real_sum) <- names
@@ -278,7 +278,8 @@ rf_preplot <- function(rf_step1_result,obj) {
   
   stat_rf <- list(pred_real_sum, recall_avg_ppari_pcell_all)
   names(stat_rf) <- c("pred_real_sum", "recall_avg_ppari_pcell_all")
-  return(stat_rf)
+  obj[[seurat_colname]] <-  stat_rf$pred_real_sum$recall
+  return(obj)
 }
 
 ### function 3 Dominant_cluster
@@ -361,7 +362,7 @@ Plot_dominant_umap <- function(pdf_prefix, obj, idents, obj_dominant,output.dir)
 
 
 ### function 5: how many times a clusters remains dominant cluster for cells inside in all runs ####### 
-stable_times <- function(obj_dominant, obj) {
+stable_times <- function(obj_dominant, obj,meta.names) {
   obj_stable_times <-numeric() 
   for (i in 1:length(obj_dominant$dominant_cluster_name_all)){
     obj_dominant$dominant_cluster_name_all[[i]]$stable_times <- apply(obj_dominant$dominant_cluster_name_all[[i]], 1, function(x)sum(x==names(obj_dominant$dominant_cluster_name_all)[i]))
@@ -369,7 +370,7 @@ stable_times <- function(obj_dominant, obj) {
   }
   names_stable_times <- unlist(sapply(obj_dominant$dominant_cluster_name_all, rownames, simplify = T))
   names(obj_stable_times) <- names_stable_times
-  meta.names <- paste0("stable_times_of_",length(obj_dominant$dominant_cluster_name_all)-1,"_comparisons")
+  #meta.names <- paste0("stable_times_of_",length(obj_dominant$dominant_cluster_name_all)-1,"_comparisons")
   obj <- AddMetaData(obj, obj_stable_times, col.name = meta.names)
   return(obj)
 }
@@ -379,24 +380,34 @@ stable_times <- function(obj_dominant, obj) {
 ##  obj_sub_test: unstable cluster to be assigned to clusters in obj_sub_train
 ##  n1: cluster names in obj_sub_train
 ##  n2: cluster names in obj_sub_test
-pair_rf_assign <- function(obj_sub_train,obj_sub_test,n1, n2) {
+pair_rf_assign <- function(obj_sub_train,obj_sub_test,n1, n2,n.gene=no.genes,n.bin=no.bins) {
   pred.table <- data.frame(matrix(ncol = n.runs, nrow =dim(obj_sub_test)[2]))
   rownames(pred.table) <- colnames(obj_sub_test)
-  cm.list <- data.frame(matrix(ncol = 5, nrow = 0))
-  colnames(cm.list) <- c("real", "pred", "Freq", "run", "pair") 
-  gene.list <- data.frame(matrix(ncol = n.runs, nrow =n.gene*n.bin))
+  
   
   #############fixed training set############ 
   markers <- FindAllMarkers(object= obj_sub_train, only.pos = TRUE, min.pct = 0.25, thresh.use = 0.25)
-  genes <- markers %>% group_by(cluster) %>% top_n(n=n.gene/length(levels(obj_sub_train@active.ident)), wt = avg_logFC)
+  genes <- markers %>% group_by(cluster) %>% top_n(n=n.gene/length(levels(obj_sub_train@active.ident)), wt = avg_log2FC)
   cat("dim of training dataset:",dim(obj_sub_train), "\n")
   index <- which(rownames(obj_sub_train)%in%genes$gene)
   sample <- GetAssayData(obj_sub_train, slot = "scale.data", assay = "integrated")[index,]
   sample <- t(sample)
   sample <- as.data.frame(sample)
-  sample <- cbind(sample,Idents(obj_sub_train))
-  colnames(sample)[n.gene+1] <- "Cluster"
-  colnames(sample)[1:n.gene]<- paste0("gene_",colnames(sample))[1:n.gene]
+  colnames(sample)<- paste0("gene_",colnames(sample))
+  Cluster <- Idents(obj_sub_train)
+  sample <- cbind(sample,Cluster)
+  
+  if (n.gene > length(index)) {
+    n.gene <- length(index)
+    cat("at least on cluster has less than",ceiling(n.gene/length(levels(obj_sub_train@active.ident))), " genes found, use ", n.gene," instead")
+    
+  }
+  
+  
+  cm.list <- data.frame(matrix(ncol = 5, nrow = 0))
+  colnames(cm.list) <- c("real", "pred", "Freq", "run", "pair") 
+  #gene.list <- data.frame(matrix(ncol = n.runs, nrow =n.gene*n.bin))
+  
   
   if (length(grep("-", colnames(sample)))!=0) {
     index.gene <- grep("-", colnames(sample))
@@ -414,7 +425,7 @@ pair_rf_assign <- function(obj_sub_train,obj_sub_test,n1, n2) {
     cm <- data.frame(real=character(),
                      pred=character(), 
                      Freq=numeric()) 
-    gene_table <- character()
+    #gene_table <- character()
     
     for (i in 1:n.bin) {
       cat("---------------bin", i, "-------------\n")
@@ -427,7 +438,7 @@ pair_rf_assign <- function(obj_sub_train,obj_sub_test,n1, n2) {
       
       pred.temp<- predict(rf, newdata = test[-(n.gene+1)])
       cm <- rbind(cm,as.data.frame(table(test[order(match(test, names(pred.temp)))][,(n.gene+1)], pred.temp)))
-      gene_table <- c(gene_table, genes$gene)
+      #gene_table <- c(gene_table, genes$gene)
       pred <- rbind(pred,as.data.frame(pred.temp))
       cat("---------------finished bin", i, "-------------\n")
     }
@@ -444,13 +455,49 @@ pair_rf_assign <- function(obj_sub_train,obj_sub_test,n1, n2) {
     
     cm.list <- rbind(cm.list, cm)
     
-    gene.list[j] <- gene_table
-    colnames(gene.list)[j] <- paste0(n1, n2, "_run", j)
+    #gene.list[j] <- gene_table
+    #colnames(gene.list)[j] <- paste0(n1, n2, "_run", j)
     
     cat("\n\n********* finished run", j, "************\n", "\n")
   }
-  pred.all <- list(pred.table,cm.list,gene.list)
-  names(pred.all) <- c("pred.table", "cm.list","gene.list")
+  #pred.all <- list(pred.table,cm.list,gene.list)
+  pred.all <- list(pred.table,cm.list)
+  
+  names(pred.all) <- c("pred.table", "cm.list")
   return(pred.all)
 }
 
+assign_unstable_clusters <- function(obj, idents,unstable_clusters, no.bins=5, no.genes =50,new_ident_name="assigned_new_ident") {
+  Idents(obj) <- idents
+  names <- levels(obj@active.ident)
+  i_train <- !levels(obj@active.ident) %in% unstable_clusters
+  obj_sub_train <- subset(obj, idents=names[i_train])
+  
+  test_ident_all <- character(0)
+  for (x in unstable_clusters) {
+    cat("assigning cluster",x," \n")
+    i_test <- levels(obj@active.ident) %in% x
+    obj_sub_test <- subset(obj, idents=names[i_test])
+    
+    ### function 6: assign unstable clusters ######
+    ##  obj_sub_train: clusters use as a referencing (training dataset)
+    ##  obj_sub_test: unstable cluster to be assigned to clusters in obj_sub_train
+    ##  n1: cluster names in obj_sub_train
+    ##  n2: cluster names in obj_sub_test
+    
+    ### Assign subcluster A2.3 to the rest 
+    assign_list <- pair_rf_assign(obj_sub_train=obj_sub_train, obj_sub_test = obj_sub_test,n1=paste0(names[i_train],collapse=""), n2=names[i_test],n.gene=no.genes,n.bin=no.bins)
+    
+    assign_list$pred.table$most_classified  <- apply(assign_list$pred.table, 1, function(x)names(which.max(table(t(x))))) ### chose the new cluster names that has been assigned most to each cell 
+    
+    test_ident <- assign_list$pred.table$most_classified
+    names(test_ident) <- rownames(assign_list$pred.table)
+    test_ident_all <- c(test_ident_all,test_ident)
+  }
+  
+  train_ident <- as.character(obj@active.ident)[obj@active.ident%in%names[i_train]]
+  names(train_ident) <- names(obj@active.ident[obj@active.ident%in%names[i_train]])
+  New_ident <- c(train_ident,test_ident_all) 
+  obj <- AddMetaData(obj, New_ident, col.name = new_ident_name)
+  return(obj)
+}
