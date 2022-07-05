@@ -48,6 +48,11 @@ Plot_dominant_umap(pdf_prefix = "mEC", EC.integration, idents = EC.integration$b
 
 ####  Assign unstable cluster 
 ####  using cluster A2 as an example: subcluster A2.2 and cluster A2.3 is not stable, will be assigned to the rest of the clusters 
+#obj: seurat object 
+#unstable_clusters: the clusters that are not stable and you wish to asign to the rest 
+# idents: cell annoation of the all clusters including the unsatble ones
+# no bins=5: using 20% as testing, 80% as trainning
+#no.genes  = 50: using 50 genes to train a random forest classifier to assgin the unstable clusters one by one.
 Cluster_A2 <- assign_unstable_clusters(obj = Cluster_A2,unstable_clusters = c("A2.2", "A2.3"),idents = Cluster_A2@active.ident,no.bins = 5,no.genes  = 50)
 
 
