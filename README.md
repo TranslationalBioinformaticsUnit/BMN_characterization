@@ -1,5 +1,5 @@
 # BMN characterization
-This repository is a summary of codes used in  [_Deep deconvolution of the hematopoietic stem cell regulatory microenvironment reveals a high degree of specialization and conservation between mouse and human_](https://www.biorxiv.org/content/10.1101/2021.07.17.452614v2).
+This repository is a summary of codes used in  [_Deconvolution of the hematopoietic stem cell microenvironment reveals a high degree of specialization and conservation_](https://www.sciencedirect.com/science/article/pii/S2589004222004953).
 
 ### Preprocessing, Integration and Clustering
 The cells were filtered and integrated using Seurat. A divide-and-conqur strategy was applied using IKAP[[REF1]](#ref1). Core script is [Clustering.R](R_code/Clustering.R)
