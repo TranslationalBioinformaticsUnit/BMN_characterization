@@ -28,7 +28,7 @@ EC.integration <- add_recall_per_cell(rf_step1_result = mEC_rf_step1,obj = EC.in
 mEC_Dominant <- Dominant_cluster(mEC_rf_step1)
 
 ###function 4: how many times a clusters remains dominant cluster for cells inside in all runs #####
-EC.integration<- stable_times(obj = EC.integration,obj_dominant =mEC_Dominant,meta.names = "stable_times") ## adding no. of stable times to Seurat object meta.names: seurat col names to store no. of stable times
+EC.integration<- stable_times(obj = EC.integration,obj_dominant =mEC_Dominant,meta.names = "stable_times") ## adding no. of stable times (#correct) to Seurat object meta.names: seurat col names to store no. of stable times
 
 # PLOTING
 
