@@ -76,6 +76,7 @@ pair_rf <- function(obj_sub, n1, n2) { #### build rm model on one pair of cluste
   rownames(pred.table) <- colnames(obj_sub)
   cm.list <- data.frame(matrix(ncol = 5, nrow = 0))    #### store the 5 rm parameters: "real" identity, "pred" identity, "Freq", which "run", "pair" of which two clusters
   colnames(cm.list) <- c("real", "pred", "Freq", "run", "pair") 
+  #gene.list <- data.frame(matrix(ncol = n.runs, nrow =n.gene*n.bin))  ##### store all the genes used: rows: genes used in all bins per run, cols: genes used in all runs
   
   for (j in 1:n.runs) {  
    # cat("********* run", j, "************\n")
@@ -88,10 +89,10 @@ pair_rf <- function(obj_sub, n1, n2) { #### build rm model on one pair of cluste
     for (i in 1:n.bin) {
       #cat("---------------bin", i, "-------------\n")
       obj_sub_train <- subset(obj_sub,cells = colnames(obj_sub)[bins!=i])  #### get the features from training set (80%)
-      markers <- FindAllMarkers(object= obj_sub_train, only.pos = TRUE, min.pct = 0.25, thresh.use = 0.25) #### find all markers from the 
+      markers <- FindAllMarkers(object= obj_sub_train, only.pos = TRUE, min.pct = 0.25, thresh.use = 0.25,verbose = F) #### find all markers from the 
       genes <- markers %>% group_by(cluster) %>% top_n(n=(n.gene/2), wt = avg_log2FC)  ####using 20 genes for clustering, 10 from each cluster
-      cat("dim of training dataset:",dim(obj_sub_train), "\n")
-      cat("dim of training markers:",dim(markers), "\n")
+      #cat("dim of training dataset:",dim(obj_sub_train), "\n")
+      #cat("dim of training markers:",dim(markers), "\n")
       rm(obj_sub_train)
       gc()
       index <- which(rownames(obj_sub)%in%genes$gene) ### row numbers of the 20 genes
@@ -105,8 +106,8 @@ pair_rf <- function(obj_sub, n1, n2) { #### build rm model on one pair of cluste
       sample <- cbind(sample,Idents(obj_sub))   ###########append cluster identity to the training matrix
     
       dimnames(sample)[[2]][ncol(sample)] <- "Cluster"    #### Cluster is the column for rm to classify
-      cat("dim of the sample:", dim(sample),"\n")
-      cat("dim of the genes:", dim(genes),"\n")
+     # cat("dim of the sample:", dim(sample),"\n")
+      #cat("dim of the genes:", dim(genes),"\n")
       colnames(sample)[1:ncol(sample)-1]<- paste0("gene_",colnames(sample))[1:ncol(sample)-1]  ##### incase genes started with numbers 
       if (length(grep("-", colnames(sample)))!=0) {   ###### change - to "_"
         index.gene <- grep("-", colnames(sample))
@@ -115,7 +116,7 @@ pair_rf <- function(obj_sub, n1, n2) { #### build rm model on one pair of cluste
       }
       test <- sample[bins==i,]
       train <-sample[bins!=i,]
-      cat("dim of testing dataset:",dim(test), "\n")
+      #cat("dim of testing dataset:",dim(test), "\n")
       
       
       rf <- randomForest(Cluster ~.,ntrees = 1000,data=train)  #### use 1000 trees 
@@ -138,12 +139,14 @@ pair_rf <- function(obj_sub, n1, n2) { #### build rm model on one pair of cluste
     
     cm.list <- rbind(cm.list, cm)
     
-   
+    #gene.list[j] <- gene_table
+   # colnames(gene.list)[j] <- paste0(n1, n2, "_run", j)
+    
     cat("\n\n********* finished run", j, "************\n", "\n")
   }
-  
+  #pred.all <- list(pred.table,cm.list,gene.list)
   pred.all <- list(pred.table,cm.list)
-  
+  #names(pred.all) <- c("pred.table", "cm.list","gene.list")
   names(pred.all) <- c("pred.table", "cm.list")
   return(pred.all)
 }
@@ -153,7 +156,7 @@ pair_rf_fix_no <- function(obj_sub, n1, n2, traning_size) {
   rownames(pred.table) <- colnames(obj_sub)
   cm.list <- data.frame(matrix(ncol = 5, nrow = 0))
   colnames(cm.list) <- c("real", "pred", "Freq", "run", "pair") 
-  
+  #gene.list <- data.frame(matrix(ncol = n.runs, nrow =n.gene*n.bin))
   
   for (j in 1:n.runs) {  
     cat("********* run", j, "************\n")
@@ -184,7 +187,7 @@ pair_rf_fix_no <- function(obj_sub, n1, n2, traning_size) {
       obj_sub_train_2 <- CreateSeuratObject(counts = cbind(count1, count2), meta.data = rbind(meta1, meta2))
       Idents(obj_sub_train_2) <- obj_sub_train_2$ident
       
-      markers <- FindAllMarkers(object= obj_sub_train_2, only.pos = TRUE, min.pct = 0.25, thresh.use = 0.25, assay = "RNA", slot = "data")
+      markers <- FindAllMarkers(object= obj_sub_train_2, only.pos = TRUE, min.pct = 0.25, thresh.use = 0.25, assay = "RNA", slot = "data",verbose = F)
       genes <- markers %>% group_by(cluster) %>% top_n(n=(n.gene/2), wt = avg_log2FC)
       cat("dim of training dataset:",dim(obj_sub_train_2), "\n")
       
@@ -203,7 +206,7 @@ pair_rf_fix_no <- function(obj_sub, n1, n2, traning_size) {
       }
       
       test <- sample[bins==i,]
-    
+      #train <-sample[bins!=i,]
       
       train <- GetAssayData(obj_sub_train_2, slot = "data", assay = "RNA")[index,]
       train <- t(train)
@@ -237,11 +240,13 @@ pair_rf_fix_no <- function(obj_sub, n1, n2, traning_size) {
     
     cm.list <- rbind(cm.list, cm)
     
-    
+    #gene.list[j] <- gene_table
+    #colnames(gene.list)[j] <- paste0(n1, n2, "_run", j)
     
     cat("\n\n********* finished run", j, "************\n", "\n")
   }
-  
+  #pred.all <- list(pred.table,cm.list,gene.list)
+  #names(pred.all) <- c("pred.table", "cm.list","gene.list")
   pred.all <- list(pred.table,cm.list)
   names(pred.all) <- c("pred.table", "cm.list")
   
@@ -394,7 +399,7 @@ pair_rf_assign <- function(obj_sub_train,obj_sub_test,n1, n2,n.gene=no.genes,n.b
   
   
   #############fixed training set############ 
-  markers <- FindAllMarkers(object= obj_sub_train, only.pos = TRUE, min.pct = 0.25, thresh.use = 0.25)
+  markers <- FindAllMarkers(object= obj_sub_train, only.pos = TRUE, min.pct = 0.25, thresh.use = 0.25,verbose = F)
   genes <- markers %>% group_by(cluster) %>% top_n(n=n.gene/length(levels(obj_sub_train@active.ident)), wt = avg_log2FC)
   cat("dim of training dataset:",dim(obj_sub_train), "\n")
   index <- which(rownames(obj_sub_train)%in%genes$gene)
@@ -414,7 +419,7 @@ pair_rf_assign <- function(obj_sub_train,obj_sub_test,n1, n2,n.gene=no.genes,n.b
   
   cm.list <- data.frame(matrix(ncol = 5, nrow = 0))
   colnames(cm.list) <- c("real", "pred", "Freq", "run", "pair") 
- 
+  #gene.list <- data.frame(matrix(ncol = n.runs, nrow =n.gene*n.bin))
   
   
   if (length(grep("-", colnames(sample)))!=0) {
@@ -433,7 +438,7 @@ pair_rf_assign <- function(obj_sub_train,obj_sub_test,n1, n2,n.gene=no.genes,n.b
     cm <- data.frame(real=character(),
                      pred=character(), 
                      Freq=numeric()) 
-   
+    #gene_table <- character()
     
     for (i in 1:n.bin) {
       cat("---------------bin", i, "-------------\n")
@@ -442,13 +447,13 @@ pair_rf_assign <- function(obj_sub_train,obj_sub_test,n1, n2,n.gene=no.genes,n.b
       test_all$Cluster <- Idents(obj_sub_test)
       colnames(test_all) <- colnames(train)
       test <- test_all[bins==i,]
-      cat("dim of testing dataset:",dim(test), "\n")
+      #cat("dim of testing dataset:",dim(test), "\n")
       
       pred.temp<- predict(rf, newdata = test[-(n.gene+1)])
       cm <- rbind(cm,as.data.frame(table(test[order(match(test, names(pred.temp)))][,(n.gene+1)], pred.temp)))
- 
+      #gene_table <- c(gene_table, genes$gene)
       pred <- rbind(pred,as.data.frame(pred.temp))
-      cat("---------------finished bin", i, "-------------\n")
+      #cat("---------------finished bin", i, "-------------\n")
     }
     colnames(pred) <- "pred"
     pred$cells <- rownames(pred)
@@ -463,10 +468,12 @@ pair_rf_assign <- function(obj_sub_train,obj_sub_test,n1, n2,n.gene=no.genes,n.b
     
     cm.list <- rbind(cm.list, cm)
     
-   
-    cat("\n\n********* finished run", j, "************\n", "\n")
+    #gene.list[j] <- gene_table
+    #colnames(gene.list)[j] <- paste0(n1, n2, "_run", j)
+    
+    #cat("\n\n********* finished run", j, "************\n", "\n")
   }
-
+  #pred.all <- list(pred.table,cm.list,gene.list)
   pred.all <- list(pred.table,cm.list)
   
   names(pred.all) <- c("pred.table", "cm.list")
